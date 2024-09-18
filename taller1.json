@@ -1,0 +1,415 @@
+{
+	"info": {
+		"_postman_id": "7d8c0673-af93-48c5-90c8-97140db2c505",
+		"name": "Taller1",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38382147"
+	},
+	"item": [
+		{
+			"name": "Sad Path",
+			"item": [
+				{
+					"name": "Crear nuevo producto",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonResponse = pm.response.json();\r",
+									"pm.collectionVariables.set(\"sku_created\",jsonResponse.sku);\r",
+									"var serverURL = pm.collectionVariables.get(\"server\");\r",
+									"var port = pm.collectionVariables.get(\"port\");\r",
+									"\r",
+									"//primer mensaje\r",
+									"pm.test(\"La solicitud fue completada con exito\", function () {\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([400, 401]);\r",
+									"});\r",
+									"\r",
+									"//segundo mensaje\r",
+									"pm.test(\"El código de respuesta fue Creado 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"//tercer mensaje\r",
+									"pm.test(\"La respuesta contiene valores validos\", function () {\r",
+									"    pm.expect(jsonResponse.timestamp).to.be.a(\"string\");\r",
+									"    pm.expect(jsonResponse.status).to.be.a(\"number\");\r",
+									"    pm.expect(jsonResponse.error).to.a(\"string\");\r",
+									"    pm.expect(jsonResponse.path).to.a(\"string\");\r",
+									"});\r",
+									"//cuarto mensaje\r",
+									"pm.test(\"La respuesta presenta un esquema JSON valido\", () =>{\r",
+									"    const validSchema = {\r",
+									"        \"type\":\"object\",\r",
+									"        \"properties\":{\r",
+									"            \"timestamp\":{\"type\":\"string\"},\r",
+									"            \"status\": {\"type\":\"number\"},\r",
+									"            \"error\": {\"type\":\"string\"},\r",
+									"             \"path\": {\"type\":\"string\"}\r",
+									"        },\r",
+									"        \"required\":[\"timestamp\",\"status\",\"error\", \"path\"]\r",
+									"    };\r",
+									"    pm.response.to.have.jsonSchema(validSchema);\r",
+									"});\r",
+									"\r",
+									"//quinto mensaje\r",
+									"console.log(pm.collectionVariables.get(\"disable_request\"));\r",
+									"if (pm.collectionVariables.get(\"disable_request\")== 0){\r",
+									"    var getProductUrl = \"http://\"+serverURL+\":\"+port+\"/api/v1/product/\"+jsonResponse.sku;\r",
+									"    pm.test(\"No se recupero el producto creado\", function () {\r",
+									"        pm.sendRequest(getProductUrl, function (err, response) {\r",
+									"            console.log(response.json());\r",
+									"        });\r",
+									"    });\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\":\"{{name}}\",\r\n    \"description\":\"{{description}}\",\r\n    \"price\":{{price}}\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}:{{port}}/api/v1/product/",
+							"host": [
+								"{{server}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"product",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar producto existente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"La solicitud no fue completada con exito\", function () {\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([400]);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"El codigo de estado de la respuesta es Bad Request\", function () {\r",
+									"    pm.response.to.have.status(\"Bad Request\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Se muestra el error esperado 400\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.status).to.eql(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"La respuesta presenta un esquema JSON valido\", () =>{\r",
+									"    const validSchema = {\r",
+									"        \"type\":\"object\",\r",
+									"        \"properties\":{\r",
+									"            \"timestamp\":{\"type\":\"string\"},\r",
+									"            \"status\": {\"type\":\"number\"},\r",
+									"            \"error\": {\"type\":\"string\"},\r",
+									"             \"path\": {\"type\":\"string\"}\r",
+									"        },\r",
+									"         \"required\":[\"timestamp\",\"status\",\"error\", \"path\"]\r",
+									"    };\r",
+									"    pm.response.to.have.jsonSchema(validSchema);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"El tiempo de respuesta es menor a 600ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(600);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\":\"{{name}}\",\r\n    \"description\":\"{{description}}\",\r\n    \"price\":{{price}}\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}:{{port}}/api/v1/product/{{sku_created}}/",
+							"host": [
+								"{{server}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"product",
+								"{{sku_created}}",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar precio de producto existente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"La solicitud PATCH no fue completada con exito\", function () {\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([400]);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"El codigo de estado de la respuesta es Bad Request\", function () {\r",
+									"    pm.response.to.have.status(\"Bad Request\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Se muestra el error esperado 404\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.status).to.eql(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"La respuesta presenta un esquema JSON valido\", () =>{\r",
+									"    const validSchema = {\r",
+									"        \"type\":\"object\",\r",
+									"        \"properties\":{\r",
+									"            \"timestamp\":{\"type\":\"string\"},\r",
+									"            \"status\": {\"type\":\"number\"},\r",
+									"            \"error\": {\"type\":\"string\"},\r",
+									"             \"path\": {\"type\":\"string\"}\r",
+									"        },\r",
+									"         \"required\":[\"timestamp\",\"status\",\"error\", \"path\"]\r",
+									"    };\r",
+									"    pm.response.to.have.jsonSchema(validSchema);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"El tiempo de respuesta es menor a 600ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(600);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"price\":{{price}}\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}:{{port}}/api/v1/product/{{sku_created}}/",
+							"host": [
+								"{{server}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"product",
+								"{{sku_created}}",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar producto por SKU",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"La solicitud fue completada con exito\", function () {\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([404]);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"El codigo de estado de la respuesta es Not Found\", function () {\r",
+									"    pm.response.to.have.status(\"Not Found\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"El producto fue eliminado con exito\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.status).to.equal(false);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"La respuesta presenta un esquema JSON valido\", () =>{\r",
+									"    const validSchema = {\r",
+									"        \"type\":\"object\",\r",
+									"        \"properties\":{\r",
+									"            \r",
+									"            \"count\": {\"type\":\"number\"},\r",
+									"            \"status\": {\"type\":\"boolean\"},\r",
+									"             \"message\": {\"type\":\"string\"}\r",
+									"        },\r",
+									"        \"required\":[\"count\",\"status\",\"message\"]\r",
+									"    };\r",
+									"    pm.response.to.have.jsonSchema(validSchema);\r",
+									"});\r",
+									"\r",
+									"//pm.test(\"El tiempo de respuesta es menor a 600ms\", function () {\r",
+									"   \r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{server}}:{{port}}/api/v1/product/{{sku_created}}/",
+							"host": [
+								"{{server}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"v1",
+								"product",
+								"{{sku_created}}",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "aGFzaGRzZnNkZnNkZnNkZnNk",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "server",
+			"value": "localhost",
+			"type": "string"
+		},
+		{
+			"key": "port",
+			"value": "8081",
+			"type": "string"
+		},
+		{
+			"key": "sku_created",
+			"value": "e7d9a342-63e9-47b6-a2e5-ffa5883438de",
+			"type": "string"
+		},
+		{
+			"key": "name",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "description",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "price",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "disable_request",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "content_no_updatable",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
